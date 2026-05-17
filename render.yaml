@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: jansetu-backend
+    env: python
+    plan: free
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+
+staticSites:
+  - type: static_site
+    name: jansetu-frontend
+    plan: free
+    branch: main
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://<your-backend-service>.onrender.com
