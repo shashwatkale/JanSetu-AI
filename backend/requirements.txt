@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-transformers
-torch
 Pillow
 sqlalchemy
 python-multipart
 jinja2
+google-genai
+python-dotenv

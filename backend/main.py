@@ -8,11 +8,7 @@ import shutil
 import uuid
 
 from database import init_db, SessionLocal, Complaint, ComplaintStatusLog
-from services.image_caption import generate_caption
-from services.classifier import classify
-from services.routing import route_to_department
-from services.severity import predict_severity
-from services.complaint_generator import generate_summary, recommended_action_for
+from services.gemini import analyze_image
 
 app = FastAPI(title="JanSetu AI - Complaint Routing MVP")
 
@@ -55,31 +51,14 @@ async def analyze_complaint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save upload: {e}")
 
-    # Generate caption (with fallback)
-    caption = generate_caption(path)
+    try:
+        result = analyze_image(path, description or "", location or "")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"AI analysis failed: {e}")
 
-    # Classify
-    category, matched = classify(caption, description or "")
-
-    # Severity
-    severity = predict_severity(category, caption)
-
-    # Department
-    department = route_to_department(category)
-
-    # Summary & recommended action
-    summary = generate_summary(category, severity, location or "unspecified location", caption, description or "")
-    recommended_action = recommended_action_for(category, severity)
-
-    return JSONResponse({
-        "caption": caption,
-        "category": category,
-        "severity": severity,
-        "department": department,
-        "summary": summary,
-        "recommended_action": recommended_action,
-        "image_path": path,
-    })
+    return JSONResponse({**result, "image_path": path})
 
 
 @app.post("/api/complaints/submit")
