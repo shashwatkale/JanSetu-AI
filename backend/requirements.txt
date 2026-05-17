@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+transformers
+torch
+Pillow
+sqlalchemy
+python-multipart
+jinja2
