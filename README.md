@@ -36,3 +36,5 @@ A ready-made `render.yaml` manifest is included for free hosting of both backend
 4. After the backend service is created, update the frontend `VITE_API_BASE_URL` env var in Render with your backend URL.
 
 If you prefer Vercel for frontend, use the same `VITE_API_BASE_URL` value and set the project root to `frontend`.
+
+> Note: `render.yaml` now deploys only the backend service. The frontend can stay deployed on Vercel using the `VITE_API_BASE_URL` environment variable to point to the Render backend.
