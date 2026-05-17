@@ -25,3 +25,14 @@ Frontend:
 Notes:
 - The backend uses SQLite (backend/jan_setu.db). Uploads are saved to backend/uploads.
 - Image captioning uses Salesforce/blip-image-captioning-base when transformers and torch are available. If not, a fallback heuristic caption is used.
+
+## Free deployment with Render
+
+A ready-made `render.yaml` manifest is included for free hosting of both backend and frontend.
+
+1. Push the repo to GitHub.
+2. Sign in to https://render.com and connect your GitHub repo.
+3. Render will detect both the backend service and the frontend static site from `render.yaml`.
+4. After the backend service is created, update the frontend `VITE_API_BASE_URL` env var in Render with your backend URL.
+
+If you prefer Vercel for frontend, use the same `VITE_API_BASE_URL` value and set the project root to `frontend`.
