@@ -1,31 +1,45 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
+import { ImagePlus, Sparkles, ShieldCheck, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 
-export default function Upload(){
-  const [file,setFile]=useState(null)
-  const [desc,setDesc]=useState('')
-  const [loc,setLoc]=useState('')
-  const [loading,setLoading]=useState(false)
-  const [result,setResult]=useState(null)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const ANALYZE_URL = `${API_BASE_URL}/api/complaints/analyze`
+const SUBMIT_URL = `${API_BASE_URL}/api/complaints/submit`
 
-  const analyze = async ()=>{
-    if(!file) return alert('Select image')
+export default function Upload() {
+  const [file, setFile] = useState(null)
+  const [desc, setDesc] = useState('')
+  const [loc, setLoc] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+
+  const analyze = async () => {
+    if (!file) {
+      setError('Please select an image first.')
+      return
+    }
+    setError('')
     setLoading(true)
     const fd = new FormData()
     fd.append('image', file)
     fd.append('description', desc)
     fd.append('location', loc)
-    try{
-      const res = await axios.post('http://localhost:8000/api/complaints/analyze', fd, { headers: {'Content-Type':'multipart/form-data'} })
+
+    try {
+      const res = await axios.post(ANALYZE_URL, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       setResult(res.data)
-    }catch(e){
-      alert('Analyze failed')
+    } catch (e) {
+      setError('Analyze failed. Please try again or check your network connection.')
     }
     setLoading(false)
   }
 
-  const submit = async ()=>{
-    if(!result) return
+  const submit = async () => {
+    if (!result) return
+    setError('')
     const payload = {
       user_id: 1,
       image_path: result.image_path,
@@ -38,104 +52,154 @@ export default function Upload(){
       summary: result.summary,
       recommended_action: result.recommended_action,
     }
-    try{
-      const res = await axios.post('http://localhost:8000/api/complaints/submit', payload)
+
+    try {
+      const res = await axios.post(SUBMIT_URL, payload)
       alert(`Submitted: ${res.data.complaint_id}`)
-    }catch(e){
-      alert('Submit failed')
+      setResult(null)
+      setFile(null)
+      setDesc('')
+      setLoc('')
+    } catch (e) {
+      setError('Submit failed. Please try again.')
     }
   }
 
   const previewUrl = file ? URL.createObjectURL(file) : null
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.75fr]">
-      <section className="card space-y-6">
-        <div>
-          <span className="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">New Complaint</span>
-          <h2 className="mt-4 text-3xl font-semibold text-slate-900">Upload an issue image and let AI analyze it</h2>
-          <p className="mt-3 text-slate-600">Capture potholes, garbage, leaks, fire hazards, or fallen trees. The system will suggest category, severity, and department routing.</p>
-        </div>
-
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">Upload Image</label>
-          <input className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-700" type="file" accept="image/*" onChange={e=>setFile(e.target.files[0])} />
-          {previewUrl && (
-            <div className="rounded-[28px] overflow-hidden border border-slate-200 bg-slate-50 shadow-sm">
-              <img src={previewUrl} alt="Preview" className="w-full h-72 object-cover" />
+    <div className="space-y-8">
+      <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/30 dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-700">
+              <Sparkles className="h-6 w-6" />
             </div>
-          )}
+            <div>
+              <p className="text-sm uppercase tracking-[0.24em] text-emerald-600">Smart upload</p>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">Report a civic issue with one photo.</h1>
+            </div>
+          </div>
+          <p className="mt-6 max-w-2xl text-slate-600 dark:text-slate-400">Upload an image of road damage, garbage, water leaks, or any public hazard. JanSetu AI analyzes it instantly and recommends the correct department and priority.</p>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.9fr]">
+            <div className="space-y-4">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Upload Image</label>
+              <input
+                className="input"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Location</label>
+              <input
+                className="input"
+                type="text"
+                placeholder="e.g. MG Road, Indore"
+                value={loc}
+                onChange={(e) => setLoc(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Notes</label>
+            <textarea
+              className="textarea"
+              placeholder="Add any context or nearby landmarks"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+            />
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button className="btn inline-flex items-center gap-2" onClick={analyze} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+              {loading ? 'Analyzing...' : 'Analyze Issue'}
+            </button>
+            {result && (
+              <button className="btn-success inline-flex items-center gap-2" onClick={submit}>
+                <CheckCircle2 className="h-4 w-4" />
+                Confirm & Submit
+              </button>
+            )}
+          </div>
+
+          {error && <p className="mt-4 text-sm text-rose-600">{error}</p>}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Description</label>
-          <textarea className="textarea" placeholder="Describe the issue" value={desc} onChange={e=>setDesc(e.target.value)} />
-        </div>
+        <aside className="space-y-6">
+          <div className="rounded-[36px] border border-slate-200 bg-slate-50 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-slate-900 dark:text-white">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-3xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/10">💡</span>
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-emerald-600">How it helps</p>
+                <h2 className="mt-2 text-xl font-semibold">Faster response for every citizen report</h2>
+              </div>
+            </div>
+            <ul className="mt-6 space-y-4 text-slate-600 dark:text-slate-400">
+              <li className="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-950">AI captioning removes manual complaint writing.</li>
+              <li className="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-950">Automatic department routing reduces delays.</li>
+              <li className="rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-950">Severity tagging helps prioritize urgent issues.</li>
+            </ul>
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Location</label>
-          <input className="input" placeholder="e.g. MG Road, Indore" value={loc} onChange={e=>setLoc(e.target.value)} />
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <button className="btn" onClick={analyze} disabled={loading}>{loading ? 'Analyzing...' : 'Analyze Complaint'}</button>
-          {result && <button className="btn btn-success" onClick={submit}>Confirm & Submit</button>}
-        </div>
+          <div className="rounded-[36px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Quick workflow</p>
+            <div className="mt-5 space-y-4 text-sm text-slate-600 dark:text-slate-400">
+              <div className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-900">1. Upload a photo</div>
+              <div className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-900">2. Add location and notes</div>
+              <div className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-900">3. Review AI summary</div>
+              <div className="rounded-3xl bg-slate-50 p-4 dark:bg-slate-900">4. Submit and track progress</div>
+            </div>
+          </div>
+        </aside>
       </section>
 
-      <aside className="space-y-5">
-        <div className="card bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-xl shadow-indigo-200/10">
-          <h3 className="text-xl font-semibold">Why JanSetu AI?</h3>
-          <p className="mt-3 text-slate-200">Smart triage for civic complaints, helping officials respond faster with clear issue details.</p>
-          <div className="mt-5 space-y-3 text-sm leading-7">
-            <p>• AI-powered captioning and classification</p>
-            <p>• Department routing for faster action</p>
-            <p>• Severity detection for urgent issues</p>
-            <p>• Clean citizen complaint flow</p>
-          </div>
-        </div>
-        <div className="card border border-slate-200 bg-slate-50">
-          <h3 className="text-lg font-semibold text-slate-900">Quick steps</h3>
-          <ol className="mt-4 space-y-3 text-slate-600">
-            <li>1. Upload the issue image</li>
-            <li>2. Add location and notes</li>
-            <li>3. Analyze and review summary</li>
-            <li>4. Submit and track later</li>
-          </ol>
-        </div>
-      </aside>
-
       {result && (
-        <section className="card lg:col-span-2">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <section className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-950">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h3 className="text-2xl font-semibold text-slate-900">AI Analysis Result</h3>
-              <p className="mt-1 text-slate-600">Verify the report summary before submission.</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-emerald-600">Analysis Result</p>
+              <h2 className="mt-3 text-3xl font-semibold text-slate-950 dark:text-white">Review the complaint before submission</h2>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-800">Department: {result.department}</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-800">Severity: {result.severity}</span>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 xl:grid-cols-3">
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h4 className="font-semibold text-slate-900">Caption</h4>
-              <p className="mt-3 text-slate-700">{result.caption}</p>
-            </div>
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h4 className="font-semibold text-slate-900">Category</h4>
-              <p className="mt-3 text-slate-700">{result.category}</p>
-            </div>
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h4 className="font-semibold text-slate-900">Action</h4>
-              <p className="mt-3 text-slate-700">{result.recommended_action}</p>
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <ShieldCheck className="h-4 w-4" /> AI verified routing
             </div>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <h4 className="font-semibold text-slate-900">Complaint Summary</h4>
-            <p className="mt-3 text-slate-700">{result.summary}</p>
+          <div className="mt-8 grid gap-5 xl:grid-cols-3">
+            <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Detected issue</p>
+              <p className="mt-3 text-xl font-semibold text-slate-950 dark:text-white">{result.category}</p>
+            </div>
+            <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Priority</p>
+              <p className="mt-3 text-xl font-semibold text-amber-600 dark:text-amber-300">{result.severity}</p>
+            </div>
+            <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Department</p>
+              <p className="mt-3 text-xl font-semibold text-slate-950 dark:text-white">{result.department}</p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Complaint summary</p>
+              <p className="mt-3 text-slate-700 dark:text-slate-300">{result.summary}</p>
+            </div>
+            <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Recommended action</p>
+              <p className="mt-3 text-slate-700 dark:text-slate-300">{result.recommended_action}</p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button className="btn inline-flex items-center gap-2" onClick={analyze} disabled={loading}>Retry analysis</button>
+            <button className="btn-success inline-flex items-center gap-2" onClick={submit}>Submit complaint</button>
           </div>
         </section>
       )}
