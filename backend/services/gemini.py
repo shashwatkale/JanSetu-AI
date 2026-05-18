@@ -11,45 +11,53 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 CATEGORIES = [
     "Pothole / Road Damage",
     "Garbage Accumulation",
-    "Water Leakage",
-    "Damaged Electric Wire",
+    "Water Leakage / Sewage Overflow",
+    "Damaged Electric Wire / Power Outage",
     "Fire / Smoke",
-    "Illegal Parking",
-    "Dead Animal",
+    "Illegal Parking / Traffic Obstruction",
+    "Dead Animal on Road",
     "Fallen Tree / Road Blockage",
+    "Broken Street Light",
+    "Open Drain / Manhole",
     "General Civic Issue",
 ]
 
 DEPARTMENTS = {
-    "Pothole / Road Damage": "Municipal Corporation / PWD",
-    "Garbage Accumulation": "Sanitation Department",
-    "Water Leakage": "Water Department",
-    "Damaged Electric Wire": "Electricity Board",
-    "Fire / Smoke": "Fire Brigade",
-    "Illegal Parking": "Traffic Police",
-    "Dead Animal": "Animal Control / Sanitation Department",
-    "Fallen Tree / Road Blockage": "Municipal Corporation",
-    "General Civic Issue": "Municipal Corporation",
+    "Pothole / Road Damage": "Public Works Department (PWD) / Nagar Nigam",
+    "Garbage Accumulation": "Municipal Solid Waste Management Department (Nagar Palika)",
+    "Water Leakage / Sewage Overflow": "Jal Board / Urban Local Body Water Supply Department",
+    "Damaged Electric Wire / Power Outage": "State Electricity Distribution Company (DISCOM)",
+    "Fire / Smoke": "State Fire and Emergency Services Department",
+    "Illegal Parking / Traffic Obstruction": "Traffic Police / City Traffic Management Cell",
+    "Dead Animal on Road": "Animal Husbandry Department / Nagar Nigam Sanitation Wing",
+    "Fallen Tree / Road Blockage": "Urban Forestry Department / Nagar Nigam",
+    "Broken Street Light": "Municipal Street Lighting Department / DISCOM",
+    "Open Drain / Manhole": "Urban Local Body (ULB) Drainage Department",
+    "General Civic Issue": "Nagar Nigam / Urban Local Body (ULB)",
 }
 
-PROMPT = """You are a civic complaint analysis AI. Analyze this image and the optional user description.
+PROMPT = """You are JanSetu AI, a civic complaint analysis system for Indian cities.
+Analyze the image and optional citizen description to identify the civic issue.
+
 Return ONLY a valid JSON object with these exact fields:
 {{
-  "caption": "one sentence describing what you see in the image",
-  "category": "one of the categories listed",
-  "severity": "one of: Low, Medium, High, Critical",
-  "recommended_action": "one sentence action for the responsible department"
+  "caption": "One precise sentence describing exactly what is visible in the image.",
+  "category": "Exactly one category from the list provided.",
+  "severity": "One of: Low, Medium, High, Critical",
+  "summary": "Write 2-3 sentences: (1) describe the issue clearly, (2) explain the public impact or risk, (3) state urgency. Be specific and factual.",
+  "recommended_action": "One clear actionable instruction for the responsible Indian government department."
 }}
 
-Categories to choose from: {categories}
+Categories: {categories}
 
 Severity guide:
-- Critical: Fire, exposed electric wires, immediate danger to life
-- High: Fallen tree blocking road, major water main burst
-- Medium: Pothole, garbage, water leak, dead animal, illegal parking
-- Low: Minor issues, cosmetic damage
+- Critical: Fire, exposed live electric wires, immediate danger to life or property
+- High: Fallen tree blocking road, major water main burst, open deep manhole
+- Medium: Pothole, garbage overflow, water leak, dead animal, illegal parking
+- Low: Minor damage, cosmetic issues, broken street light in low-traffic area
 
-User description (may be empty): {description}
+Location context: {location}
+Citizen description: {description}
 
 Respond with JSON only, no markdown, no explanation."""
 
@@ -66,12 +74,15 @@ def analyze_image(image_path: str, description: str = "", location: str = "") ->
         model=model,
         contents=[
             types.Part.from_bytes(data=open(image_path, "rb").read(), mime_type=mime),
-            PROMPT.format(categories=", ".join(CATEGORIES), description=description or "none"),
+            PROMPT.format(
+                categories=", ".join(CATEGORIES),
+                description=description or "none",
+                location=location or "not specified",
+            ),
         ]
     )
 
     raw = response.text.strip()
-    # strip markdown code block if present
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):
@@ -86,21 +97,11 @@ def analyze_image(image_path: str, description: str = "", location: str = "") ->
     if severity not in ("Low", "Medium", "High", "Critical"):
         severity = "Medium"
 
-    loc = location or "unspecified location"
-    caption = data.get("caption", "")
-    summary = (
-        f"A {severity} level complaint has been detected for {category} at {loc}. "
-        f"The uploaded image and description indicate a civic issue that requires attention. "
-        f"Caption: {caption}."
-    )
-    if description:
-        summary += f" Description: {description.strip()}"
-
     return {
-        "caption": caption,
+        "caption": data.get("caption", ""),
         "category": category,
         "severity": severity,
-        "department": DEPARTMENTS.get(category, "Municipal Corporation"),
-        "summary": summary,
+        "department": DEPARTMENTS.get(category, "Nagar Nigam / Urban Local Body (ULB)"),
+        "summary": data.get("summary", ""),
         "recommended_action": data.get("recommended_action", "Inspect and assign to appropriate field team"),
     }

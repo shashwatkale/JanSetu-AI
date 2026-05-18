@@ -1,4 +1,5 @@
 import os
+import traceback
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,6 +7,10 @@ from pathlib import Path
 from datetime import datetime
 import shutil
 import uuid
+import httpx
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
 
 from database import init_db, SessionLocal, Complaint, ComplaintStatusLog
 from services.image_caption import generate_caption
@@ -43,34 +48,74 @@ def save_upload(file: UploadFile) -> str:
     return str(dest)
 
 
+def save_upload_bytes(content: bytes, filename: str) -> str:
+    ext = Path(filename).suffix or ".jpg"
+    fn = f"{uuid.uuid4().hex}{ext}"
+    dest = UPLOAD_DIR / fn
+    with dest.open("wb") as buffer:
+        buffer.write(content)
+    return str(dest)
+
+
 @app.post("/api/complaints/analyze")
 async def analyze_complaint(
     image: UploadFile = File(...),
     description: str = Form(None),
     location: str = Form(None),
 ):
-    # Save file
+    content = await image.read()
     try:
-        path = save_upload(image)
+        path = save_upload_bytes(content, image.filename)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save upload: {e}")
 
-    # Generate caption (with fallback)
+    # --- Primary: Gemini ---
+    if os.getenv("GEMINI_API_KEY"):
+        try:
+            from services.gemini import analyze_image
+            data = analyze_image(path, description or "", location or "")
+            data["image_path"] = path
+            return JSONResponse(data)
+        except Exception as e:
+            print("GEMINI ERROR:", str(e))
+            print(traceback.format_exc())
+
+    # --- Fallback: HuggingFace BLIP captioning ---
+    hf_api_key = os.getenv("HF_API")
+    if hf_api_key:
+        try:
+            hf_url = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base"
+            headers = {"Authorization": f"Bearer {hf_api_key}", "Content-Type": "application/octet-stream"}
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                hf_response = await client.post(hf_url, headers=headers, content=content)
+            hf_response.raise_for_status()
+            result = hf_response.json()
+            caption = result[0].get("generated_text", "") if isinstance(result, list) else str(result)
+            category, _ = classify(caption, description or "")
+            severity = predict_severity(category, caption)
+            department = route_to_department(category)
+            summary = generate_summary(category, severity, location or "unspecified location", caption, description or "")
+            recommended_action = recommended_action_for(category, severity)
+            return JSONResponse({
+                "caption": caption,
+                "category": category,
+                "severity": severity,
+                "department": department,
+                "summary": summary,
+                "recommended_action": recommended_action,
+                "image_path": path,
+            })
+        except Exception as e:
+            print("HF INFERENCE ERROR:", str(e))
+            print(traceback.format_exc())
+
+    # --- Last resort: local heuristic ---
     caption = generate_caption(path)
-
-    # Classify
-    category, matched = classify(caption, description or "")
-
-    # Severity
+    category, _ = classify(caption, description or "")
     severity = predict_severity(category, caption)
-
-    # Department
     department = route_to_department(category)
-
-    # Summary & recommended action
     summary = generate_summary(category, severity, location or "unspecified location", caption, description or "")
     recommended_action = recommended_action_for(category, severity)
-
     return JSONResponse({
         "caption": caption,
         "category": category,

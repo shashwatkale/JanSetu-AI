@@ -80,6 +80,13 @@ button:disabled {
   padding: 32px 24px;
 }
 
+/* Extra bottom padding on mobile for fixed bottom nav */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 5rem;
+  }
+}
+
 .topbar {
   @apply mb-8 rounded-[32px] border border-slate-200 bg-white/95 p-6 shadow-xl shadow-slate-200/30 backdrop-blur-xl;
 }
