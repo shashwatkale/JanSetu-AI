@@ -1,41 +1,34 @@
-import { featureList } from '../data/landingData'
-import { Sparkles, Layers, ShieldCheck, MapPin, Activity, Clock3, AlertTriangle, ClipboardCheck, Globe2, Monitor } from 'lucide-react'
+import { Sparkles, Layers, ShieldCheck, MapPin, ClipboardCheck, Activity } from 'lucide-react'
 
-const iconMap = {
-  'AI Image Captioning': Sparkles,
-  'Complaint Category Detection': Layers,
-  'Severity Prediction': ShieldCheck,
-  'Department Routing': MapPin,
-  'AI Complaint Summary': ClipboardCheck,
-  'Location Tagging': Globe2,
-  'Duplicate Complaint Detection': AlertTriangle,
-  'Multi-Department Routing': Monitor,
-  'Citizen Tracking': Activity,
-  'Admin Dashboard': Layers,
-  'SLA / Escalation Ready': Clock3,
-  'Gemini API Ready': Sparkles,
-}
+const features = [
+  { icon: Sparkles, title: 'AI Image Captioning', desc: 'Auto-describes issue photos for instant triage.' },
+  { icon: Layers, title: 'Category Detection', desc: 'Classifies potholes, garbage, fire, leaks & more.' },
+  { icon: ShieldCheck, title: 'Severity Prediction', desc: 'Assigns priority based on hazard and impact.' },
+  { icon: MapPin, title: 'Smart Routing', desc: 'Routes each complaint to the correct department.' },
+  { icon: ClipboardCheck, title: 'AI Complaint Summary', desc: 'Generates formal complaint text automatically.' },
+  { icon: Activity, title: 'Real-time Tracking', desc: 'Citizens stay informed from submission to resolution.' },
+]
 
 export default function FeatureGrid() {
   return (
-    <section id="features" className="space-y-6">
-      <div className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.24em] text-emerald-600">Features</p>
-        <h2 className="text-3xl font-semibold text-slate-950 dark:text-white">Modern civic-tech features built for fast citizen service.</h2>
+    <section id="features" className="space-y-5">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">Features</p>
+        <h2 className="text-2xl font-semibold text-slate-900">Everything needed for civic-tech at scale.</h2>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {featureList.map((item) => {
-          const Icon = iconMap[item.title] || Sparkles
-          return (
-            <div key={item.title} className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950">
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-950 dark:text-white">{item.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.description}</p>
+        {features.map(({ icon: Icon, title, desc }) => (
+          <div
+            key={title}
+            className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition group-hover:bg-emerald-100">
+              <Icon className="h-4.5 w-4.5 h-[18px] w-[18px]" />
             </div>
-          )
-        })}
+            <p className="text-sm font-semibold text-slate-900">{title}</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-slate-500">{desc}</p>
+          </div>
+        ))}
       </div>
     </section>
   )

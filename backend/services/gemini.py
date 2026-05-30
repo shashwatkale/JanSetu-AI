@@ -32,37 +32,47 @@ DEPARTMENTS = {
     "General Civic Issue": "Municipal Corporation",
 }
 
-PROMPT = """You are a civic complaint analysis AI. You are given:
-1. The actual image
-2. A BLIP-generated visual caption describing what is in the image
-3. An optional user description and location
-4. The user-reported severity of the issue
+PROMPT = """You are a civic complaint analysis AI.
 
-Use ALL of the above to return ONLY a valid JSON object with these exact fields:
+You are given:
+1. The actual image of a civic issue
+2. A BLIP-generated visual caption of the image
+3. A user-written description of the problem (this is the PRIMARY source for the summary)
+4. The location provided by the user
+5. The severity selected by the user (treat this as FINAL — do not change it)
+
+Return ONLY a valid JSON object with these exact fields:
 {{
-  "caption": "one precise sentence describing exactly what is visible in the image, incorporating the BLIP caption",
-  "category": "one of the categories listed",
-  "severity": "final severity after weighing both your visual analysis AND the user-reported severity — if user says Critical/Severe but image looks minor, explain in summary; if image looks worse than user says, escalate",
-  "summary": "2-3 sentences: what the issue is visually, how your AI severity compares to user-reported severity ({user_severity}), and why it needs attention — be specific, include location if provided",
-  "recommended_action": "one specific actionable sentence for the responsible department based on what is visible"
+  "caption": "One factual sentence describing what is visible in the image. Base it on the BLIP caption. No assumptions or emotional language.",
+  "category": "One of the categories listed below.",
+  "severity": "{user_severity}",
+  "summary": "2-3 sentences. PRIORITY ORDER: (1) incorporate the user's own description verbatim or closely paraphrased, (2) reference what the uploaded image shows, (3) mention the location if provided. Start with 'The user reported...'. Use only factual, neutral language. Do NOT use words like dangerous, hazardous, severe risk, major threat, or public health crisis unless the user explicitly wrote them.",
+  "recommended_action": "One concise sentence (max 20 words) telling the responsible department the specific field action required. No background context, no repetition of the summary."
 }}
 
-Categories to choose from: {categories}
+Categories: {categories}
 
-Severity scale (use exactly one): Low, Medium, High, Severe, Critical
-Severity guide:
-- Critical: Fire, exposed electric wires, immediate danger to life
-- Severe: Major structural damage, large water main burst, road fully blocked
-- High: Fallen tree, significant pothole, large garbage pile
-- Medium: Moderate pothole, water leak, dead animal, illegal parking
-- Low: Minor issues, cosmetic damage
+Severity field: Always output exactly "{user_severity}" — never modify it.
 
-User-reported severity: {user_severity}
+Summary rules:
+- If user description is provided, it MUST be the primary basis of the summary
+- Start with: "The user reported..."
+- Then reference image: "The uploaded image shows..."
+- Then location if available: "...near {location}."
+- Objective and factual only — no predictions, no assumptions, no emotional wording
+
+Action rules:
+- One sentence, maximum 20 words
+- Direct instruction to the department
+- Specific to the issue type visible
+- No repetition of summary content
+
+User description: {description}
 BLIP visual caption: {blip_caption}
 Location: {location}
-User description (may be empty): {description}
+User-selected severity: {user_severity}
 
-Respond with JSON only, no markdown, no explanation."""
+Respond with JSON only. No markdown. No explanation."""
 
 
 
