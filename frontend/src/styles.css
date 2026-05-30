@@ -12,59 +12,7 @@ html {
 }
 
 body {
-  @apply bg-slate-100 text-slate-900 antialiased;
-}
-html.dark {
-  color-scheme: dark;
-}
-
-html.dark body {
-  @apply bg-slate-950 text-slate-100;
-}
-
-html.dark .card,
-html.dark .card-alt,
-html.dark .card-soft,
-html.dark .topbar,
-html.dark .hero {
-  background-color: #0f172a;
-  border-color: #334155;
-}
-
-html.dark .btn-secondary {
-  @apply bg-slate-800 text-slate-100 hover:bg-slate-700 focus:ring-slate-600;
-}
-
-html.dark .input,
-html.dark .textarea {
-  @apply bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:ring-indigo-500;
-}
-
-html.dark .badge,
-html.dark .info-pill {
-  @apply bg-slate-800 text-slate-200;
-}
-
-html.dark .bg-white {
-  background-color: #0f172a !important;
-}
-
-html.dark .bg-slate-50 {
-  background-color: #111827 !important;
-}
-
-html.dark .bg-slate-100 {
-  background-color: #1e293b !important;
-}
-
-html.dark .text-slate-900 {
-  color: #f8fafc !important;
-}
-
-html.dark .text-slate-700,
-html.dark .text-slate-600,
-html.dark .text-slate-500 {
-  color: #cbd5e1 !important;
+  @apply bg-slate-50 text-slate-900 antialiased;
 }
 * {
   box-sizing: border-box;
@@ -97,7 +45,7 @@ button:disabled {
 }
 
 .btn {
-  @apply inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300;
+  @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300;
 }
 
 .btn-secondary {
@@ -125,12 +73,12 @@ button:disabled {
 }
 
 .input {
-  @apply w-full rounded-[28px] border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none;
+  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none;
 }
 
 .textarea {
-  @apply w-full rounded-[28px] border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none;
-  min-height: 10rem;
+  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition duration-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none;
+  min-height: 8rem;
 }
 
 input[type='file'] {

@@ -1,58 +1,67 @@
-import { aiDemo } from '../data/landingData'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, ShieldCheck } from 'lucide-react'
+
+const demo = {
+  caption: 'Large pothole with uneven pavement visible on road surface.',
+  category: 'Pothole / Road Damage',
+  severity: 'Medium',
+  department: 'Municipal Corporation / PWD',
+  action: 'Schedule road repair within 48 hours.',
+}
+
+const severityColor = { Low: 'text-green-600 bg-green-50', Medium: 'text-amber-600 bg-amber-50', High: 'text-orange-600 bg-orange-50', Critical: 'text-rose-600 bg-rose-50' }
 
 export default function AiDemoSection() {
   return (
-    <section className="rounded-[36px] border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-950">
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div className="space-y-4">
-          <p className="text-sm uppercase tracking-[0.24em] text-emerald-600">AI Analysis Demo</p>
-          <h2 className="text-3xl font-semibold text-slate-950 dark:text-white">See the AI complaint summary in a clean, mobile-friendly layout.</h2>
-          <p className="max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-400">This interactive demo highlights the output citizens receive after uploading a civic issue photo.</p>
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">AI Demo</p>
+          <h2 className="text-2xl font-semibold text-slate-900">See what the AI returns in seconds.</h2>
+          <p className="text-sm leading-relaxed text-slate-500">
+            Upload any civic issue photo and receive a structured complaint with routing — no manual input needed.
+          </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-              <span>Upload preview</span>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Photo</span>
-            </div>
-            <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=60" alt="Issue preview" className="h-52 w-full object-cover" />
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">AI Analysis Result</span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+              <Sparkles className="h-3.5 w-3.5" /> Auto-generated
             </div>
           </div>
-          <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-5 rounded-[28px] bg-slate-950/95 p-4 text-slate-100 shadow-lg shadow-slate-950/20">
-              <div className="mb-3 flex items-center justify-between text-sm text-slate-400">
-                <span>AI Generated Output</span>
-                <Sparkles className="h-5 w-5 text-emerald-400" />
-              </div>
-              <p className="text-sm text-slate-300">Instantly understand issue context and route complaints at scale.</p>
+
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <img
+              src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=800&q=60"
+              alt="Demo issue"
+              className="h-40 w-full object-cover"
+            />
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <p className="text-xs text-slate-400">Issue Type</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{demo.category}</p>
             </div>
-            <div className="space-y-4">
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Caption</p>
-                <p className="mt-2 text-base font-semibold text-slate-950 dark:text-white">{aiDemo.caption}</p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Category</p>
-                  <p className="mt-2 font-semibold text-slate-950 dark:text-white">{aiDemo.category}</p>
-                </div>
-                <div className="rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Severity</p>
-                  <p className="mt-2 font-semibold text-amber-600 dark:text-amber-300">{aiDemo.severity}</p>
-                </div>
-              </div>
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Department</p>
-                <p className="mt-2 font-semibold text-slate-950 dark:text-white">{aiDemo.department}</p>
-              </div>
-              <div className="rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Summary</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{aiDemo.summary}</p>
-              </div>
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <p className="text-xs text-slate-400">Severity</p>
+              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${severityColor[demo.severity]}`}>
+                {demo.severity}
+              </span>
             </div>
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <p className="text-xs text-slate-400">Department</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{demo.department}</p>
+            </div>
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <p className="text-xs text-slate-400">Recommended Action</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{demo.action}</p>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+            <span className="text-xs font-medium text-emerald-700">Complaint routed to Municipal Corporation</span>
           </div>
         </div>
       </div>
