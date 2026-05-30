@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,7 +15,16 @@ from services.routing import route_to_department
 from services.severity import predict_severity
 from services.complaint_generator import generate_summary, recommended_action_for
 
-app = FastAPI(title="JanSetu AI - Complaint Routing MVP")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    init_db()
+    yield
+    # Shutdown
+
+
+app = FastAPI(title="JanSetu AI - Complaint Routing MVP", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,11 +37,6 @@ app.add_middleware(
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-
-@app.on_event("startup")
-def startup_event():
-    init_db()
 
 
 def save_upload(file: UploadFile) -> str:
@@ -199,3 +204,8 @@ def update_complaint_status(complaint_id: int, payload: dict):
             raise HTTPException(status_code=400, detail="Missing status field")
     finally:
         db.close()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
